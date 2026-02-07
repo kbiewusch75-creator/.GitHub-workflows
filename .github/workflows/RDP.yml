@@ -1,0 +1,40 @@
+name: Ravana-Viman-RDP
+
+on: 
+  workflow_dispatch: # Isse manual 'Run' button aayega
+
+jobs:
+  Lanka-Dahan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: RAM & Storage Boost
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc "/usr/local/share/boost"
+          sudo fallocate -l 10G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+
+      - name: Install Tailscale
+        run: curl -fsSL https://tailscale.com/install.sh | sh
+
+      - name: Connect Tunnel
+        run: sudo tailscale up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=Ravana-RDP
+
+      - name: Setup Desktop & Chrome
+        run: |
+          sudo apt update
+          sudo apt install -y xfce4 xfce4-goodies xrdp
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt install ./google-chrome-stable_current_amd64.deb -y
+          echo "xfce4-session" > ~/.xsession
+          sudo systemctl enable xrdp
+          sudo systemctl start xrdp
+          echo "runneradmin:RavanaLanka123" | sudo chpasswd
+
+      - name: Keep Alive (6 Hours)
+        run: sleep 21600
+        
